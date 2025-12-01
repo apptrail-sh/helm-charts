@@ -1,0 +1,48 @@
+🚀 AppTrail Agent has been deployed!
+
+{{- if .Values.controlplane.enabled }}
+
+📡 Control Plane Integration: ENABLED
+   URL: {{ .Values.controlplane.url }}
+   Cluster ID: {{ .Values.controlplane.clusterId }}
+   {{- if .Values.controlplane.environment }}
+   Environment: {{ .Values.controlplane.environment }}
+   {{- end }}
+{{- else }}
+
+📡 Control Plane Integration: DISABLED
+   Events will only be exported as Prometheus metrics.
+   To enable, set:
+     controlplane.enabled=true
+     controlplane.url=http://apptrail-controlplane:3000/api/v1/events
+     controlplane.clusterId=your-cluster-id
+{{- end }}
+
+{{- if .Values.slack.enabled }}
+
+💬 Slack Notifications: ENABLED
+{{- else }}
+
+💬 Slack Notifications: DISABLED
+   To enable, set slack.enabled=true and slack.webhookUrl
+{{- end }}
+
+{{- if .Values.metrics.enabled }}
+
+📊 Metrics are available at:
+   kubectl port-forward svc/{{ include "agent.fullname" . }}-metrics {{ .Values.metrics.service.port }}:{{ .Values.metrics.service.port }} -n {{ .Release.Namespace }}
+   Then visit: http://localhost:{{ .Values.metrics.service.port }}/metrics
+
+{{- if .Values.metrics.serviceMonitor.enabled }}
+   ServiceMonitor is enabled for Prometheus Operator.
+{{- else }}
+   To enable Prometheus Operator ServiceMonitor, set metrics.serviceMonitor.enabled=true
+{{- end }}
+{{- end }}
+
+📋 The agent watches all namespaces for workloads with the label:
+   app.kubernetes.io/version
+
+   Add this label to your Deployments, StatefulSets, and DaemonSets to track version changes.
+
+📚 Documentation: https://github.com/apptrail-sh/agent

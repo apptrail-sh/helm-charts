@@ -1,0 +1,166 @@
+# AppTrail Agent Helm Chart Values
+# https://github.com/apptrail-sh/agent
+
+# -- Number of replicas (should be 1 with leader election)
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: ghcr.io/apptrail-sh/agent
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default: chart appVersion)
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full resource name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a service account
+  create: true
+  # -- Automount API credentials
+  automount: true
+  # -- Annotations for the service account
+  annotations: {}
+  # -- Service account name (auto-generated if not set)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod labels
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+# Agent configuration
+agent:
+  # -- Enable leader election for HA
+  leaderElect: true
+  # -- Metrics bind address
+  metricsBindAddress: ":8080"
+  # -- Health probe bind address
+  healthProbeBindAddress: ":8081"
+  # -- Enable secure metrics (HTTPS)
+  metricsSecure: false
+  # -- Enable HTTP/2 (disabled by default for security)
+  enableHTTP2: false
+
+# Control Plane integration
+controlplane:
+  # -- Enable Control Plane integration
+  enabled: false
+  # -- Control Plane URL (e.g., http://apptrail-controlplane:3000/api/v1/events)
+  url: ""
+  # -- Cluster ID (required if controlplane.enabled is true)
+  clusterId: ""
+  # -- Environment name (optional, can use environment mapping in controlplane)
+  environment: ""
+
+# Slack integration
+slack:
+  # -- Enable Slack notifications
+  enabled: false
+  # -- Slack webhook URL
+  webhookUrl: ""
+  # -- Existing secret containing Slack webhook URL (key: webhook-url)
+  existingSecret: ""
+
+# Metrics configuration
+metrics:
+  # -- Enable metrics service
+  enabled: true
+  service:
+    # -- Metrics service port
+    port: 8080
+    # -- Metrics service annotations
+    annotations: {}
+  # -- ServiceMonitor for Prometheus Operator
+  serviceMonitor:
+    enabled: false
+    # -- Interval for scraping
+    interval: 30s
+    # -- Scrape timeout
+    scrapeTimeout: 10s
+    # -- Additional labels for ServiceMonitor
+    labels: {}
+    # -- Namespace for ServiceMonitor (defaults to chart namespace)
+    namespace: ""
+
+# Service configuration (for metrics)
+service:
+  type: ClusterIP
+  port: 8080
+
+# -- Resource requests and limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# Health probes
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Additional volumes
+volumes: []
+
+# -- Additional volume mounts
+volumeMounts: []
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra arguments to pass to the agent
+extraArgs: []
+
+# CRD management
+crds:
+  # -- Install CRDs with the chart
+  install: true
+  # -- Keep CRDs on chart uninstall
+  keep: true
+
+# RBAC configuration
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding
+  create: true

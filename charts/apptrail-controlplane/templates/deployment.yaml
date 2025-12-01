@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "controlplane.fullname" . }}
+  labels:
+    {{- include "controlplane.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "controlplane.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "controlplane.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "controlplane.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.migrations.enabled }}
+      initContainers:
+        - name: migrations
+          image: "{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.migrations.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.migrations.securityContext | nindent 12 }}
+          env:
+            {{- if .Values.database.existingSecret }}
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql://{{ .Values.migrations.jdbcHost }}:{{ .Values.migrations.jdbcPort }}/{{ .Values.migrations.jdbcDatabase }}{{ .Values.migrations.jdbcParams }}"
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.migrations.usernameKey | default "username" }}
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.migrations.passwordKey | default "password" }}
+            {{- else }}
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql://{{ .Values.migrations.jdbcHost }}:{{ .Values.migrations.jdbcPort }}/{{ .Values.migrations.jdbcDatabase }}{{ .Values.migrations.jdbcParams }}"
+            - name: FLYWAY_USER
+              value: {{ .Values.migrations.username | quote }}
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "controlplane.fullname" . }}-db
+                  key: password
+            {{- end }}
+            {{- with .Values.migrations.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.migrations.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: APPTRAIL_PORT
+              value: {{ .Values.config.port | quote }}
+            - name: APPTRAIL_HTTP_EVENT_HANDLER
+              value: {{ .Values.config.httpEventHandler | quote }}
+            - name: APPTRAIL_TEAM_LABEL_KEY
+              value: {{ .Values.config.teamLabelKey | quote }}
+            - name: APPTRAIL_DATABASE_MAX_OPEN
+              value: {{ .Values.config.databaseMaxOpen | quote }}
+            - name: APPTRAIL_DATABASE_MAX_IDLE
+              value: {{ .Values.config.databaseMaxIdle | quote }}
+            {{- if .Values.database.url }}
+            - name: APPTRAIL_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.database.existingSecret }}
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.existingSecretKey }}
+                  {{- else }}
+                  name: {{ include "controlplane.fullname" . }}-db
+                  key: database-url
+                  {{- end }}
+            {{- end }}
+            {{- if .Values.environmentMapping.enabled }}
+            - name: APPTRAIL_ENVIRONMENT_MAPPING_FILE
+              value: /config/environment-mapping.yaml
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.config.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.environmentMapping.enabled }}
+            - name: env-mapping
+              mountPath: /config
+              readOnly: true
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- if .Values.environmentMapping.enabled }}
+        - name: env-mapping
+          configMap:
+            {{- if .Values.environmentMapping.configMapName }}
+            name: {{ .Values.environmentMapping.configMapName }}
+            {{- else }}
+            name: {{ include "controlplane.fullname" . }}-env-mapping
+            {{- end }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

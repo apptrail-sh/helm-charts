@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":semanticCommits"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Helm chart dependencies",
+      "matchManagers": ["helmv3"],
+      "groupName": "helm-dependencies",
+      "automerge": false
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^charts/.*/values\\.yaml$"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>.*?)\\s+depName=(?<depName>.*?)\\n.*?:\\s*(?<currentValue>.*)"
+      ]
+    }
+  ]
+}
+

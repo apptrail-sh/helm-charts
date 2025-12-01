@@ -1,0 +1,356 @@
+# AppTrail Control Plane Helm Chart Values
+# https://github.com/apptrail-sh/controlplane
+
+# -- Number of replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: ghcr.io/apptrail-sh/controlplane
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default: chart appVersion)
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full resource name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a service account
+  create: true
+  # -- Automount API credentials
+  automount: true
+  # -- Annotations for the service account
+  annotations: {}
+  # -- Service account name (auto-generated if not set)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod labels
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+# Application configuration
+config:
+  # -- Server port
+  port: "3000"
+  # -- Enable HTTP event handler for receiving events from agents
+  httpEventHandler: true
+  # -- Team label key for workload identification
+  teamLabelKey: "team"
+  # -- Database max open connections
+  databaseMaxOpen: 25
+  # -- Database max idle connections
+  databaseMaxIdle: 5
+
+# Database configuration
+database:
+  # -- Database URL (required)
+  # Format: postgres://user:password@host:port/database?sslmode=disable
+  url: ""
+  # -- Use existing secret for database URL
+  existingSecret: ""
+  # -- Key in existing secret containing database URL
+  existingSecretKey: "database-url"
+
+# =============================================================================
+# Database Migrations (Flyway)
+# =============================================================================
+migrations:
+  # -- Enable database migrations init container
+  enabled: false
+  image:
+    # -- Migrations image repository (contains Flyway + SQL migrations)
+    repository: ghcr.io/apptrail-sh/controlplane-migrations
+    # -- Migrations image tag (defaults to chart appVersion)
+    tag: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+  # -- JDBC host (PostgreSQL service name)
+  jdbcHost: "postgresql"
+  # -- JDBC port
+  jdbcPort: "5432"
+  # -- JDBC database name
+  jdbcDatabase: "apptrail"
+  # -- JDBC connection params
+  jdbcParams: "?sslmode=disable"
+  # -- Database username
+  username: "apptrail"
+  # -- Database password (required when migrations.enabled and not using existingSecret)
+  password: ""
+  # -- Secret key for username (when using database.existingSecret)
+  usernameKey: "username"
+  # -- Secret key for password (when using database.existingSecret)
+  passwordKey: "password"
+  # -- Extra environment variables for migrations
+  extraEnv: []
+  # -- Security context for migrations container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101  # flyway user in the alpine image
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  # -- Resource requests and limits for migrations
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+# Environment mapping configuration
+environmentMapping:
+  # -- Enable environment mapping from ConfigMap
+  enabled: false
+  # -- Name of ConfigMap containing environment mapping
+  configMapName: ""
+  # -- Key in ConfigMap containing the YAML config
+  configMapKey: "environment-mapping.yaml"
+  # -- Inline environment mapping configuration (alternative to ConfigMap)
+  # Example:
+  # inline:
+  #   cluster_mappings:
+  #     production.prod01: production
+  #     staging.stg01: staging
+  #   namespace_mappings:
+  #     default: default
+  inline: {}
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 3000
+
+# Ingress configuration (for API only, use frontend.ingress for UI)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: api.apptrail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: apptrail-api-tls
+    #   hosts:
+    #     - api.apptrail.local
+
+# Gateway API HTTPRoute configuration (for API)
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - api.apptrail.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+# -- Resource requests and limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+# Health probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Additional volumes
+volumes: []
+
+# -- Additional volume mounts
+volumeMounts: []
+
+# -- Extra environment variables
+extraEnv: []
+
+# =============================================================================
+# Frontend Configuration (Optional Web UI)
+# =============================================================================
+frontend:
+  # -- Enable the frontend web UI
+  enabled: true
+
+  # -- Number of frontend replicas
+  replicaCount: 1
+
+  # -- Frontend application version (REQUIRED)
+  appVersion: "0.1.0"
+
+  image:
+    # -- Frontend container image repository
+    repository: ghcr.io/apptrail-sh/frontend
+    # -- Frontend image pull policy
+    pullPolicy: IfNotPresent
+    # -- Frontend image tag (defaults to frontend.appVersion)
+    tag: ""
+
+  # -- Frontend pod annotations
+  podAnnotations: {}
+
+  # -- Frontend pod labels
+  podLabels: {}
+
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 101  # nginx user
+
+  # Frontend service configuration
+  service:
+    type: ClusterIP
+    port: 80
+
+  # Frontend ingress configuration
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: apptrail.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+      # - secretName: apptrail-tls
+      #   hosts:
+      #     - apptrail.local
+
+  # Frontend Gateway API HTTPRoute configuration
+  httpRoute:
+    enabled: false
+    annotations: {}
+    parentRefs:
+      - name: gateway
+        sectionName: http
+    hostnames:
+      - apptrail.local
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+  # -- Frontend resource requests and limits
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+  # Frontend health probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+  # Frontend autoscaling
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+  # -- Frontend node selector
+  nodeSelector: {}
+
+  # -- Frontend tolerations
+  tolerations: []
+
+  # -- Frontend affinity rules
+  affinity: {}
+
+  # -- Extra environment variables for frontend
+  extraEnv: []
+
+# Optional: Include PostgreSQL as a dependency
+# postgresql:
+#   enabled: false
+#   auth:
+#     database: apptrail
+#     username: apptrail
+#     password: ""
+#     existingSecret: ""

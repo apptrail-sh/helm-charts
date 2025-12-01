@@ -1,0 +1,17 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Helm
+*.tgz
+charts/**/charts/
+Chart.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.ct/

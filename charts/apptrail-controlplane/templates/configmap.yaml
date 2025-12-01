@@ -1,0 +1,18 @@
+{{- if and .Values.environmentMapping.enabled (not .Values.environmentMapping.configMapName) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "controlplane.fullname" . }}-env-mapping
+  labels:
+    {{- include "controlplane.labels" . | nindent 4 }}
+data:
+  environment-mapping.yaml: |
+    {{- if .Values.environmentMapping.inline }}
+    {{- toYaml .Values.environmentMapping.inline | nindent 4 }}
+    {{- else }}
+    # Empty environment mapping - configure via values.yaml
+    cluster_mappings: {}
+    namespace_mappings: {}
+    {{- end }}
+{{- end }}
+
