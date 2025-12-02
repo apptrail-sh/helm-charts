@@ -1,0 +1,58 @@
+name: Sync Agent CRD
+
+on:
+  pull_request:
+    paths:
+      - 'charts/apptrail-agent/Chart.yaml'
+  
+  workflow_dispatch:
+    inputs:
+      agent_version:
+        description: 'Agent version to sync (e.g., 0.3.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-crd:
+    runs-on: ubuntu-latest
+    # Only run for Renovate PRs or manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.head_ref, 'renovate'))
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get agent version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.agent_version }}"
+          else
+            # Extract version from Chart.yaml (Renovate already updated it)
+            VERSION=$(grep '^appVersion:' charts/apptrail-agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          fi
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Agent version: ${VERSION}"
+
+      - name: Run sync script
+        run: |
+          chmod +x scripts/sync-agent-crd.sh
+          ./scripts/sync-agent-crd.sh "${{ steps.version.outputs.version }}"
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
+          file_pattern: 'charts/apptrail-agent/**'
+
