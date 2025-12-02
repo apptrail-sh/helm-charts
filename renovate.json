@@ -5,22 +5,30 @@
     "helpers:pinGitHubActionDigests",
     ":semanticCommits"
   ],
-  "labels": ["dependencies"],
-  "allowedPostUpgradeCommands": [
+  "labels": [
+    "dependencies"
+  ],
+  "allowedCommands": [
     "^\\./scripts/sync-agent-crd\\.sh .*$"
   ],
   "packageRules": [
     {
       "description": "Group GitHub Actions updates",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "groupName": "github-actions",
       "automerge": true,
       "automergeType": "pr"
     },
     {
       "description": "AppTrail Agent - sync CRD and bump chart version",
-      "matchPackageNames": ["apptrail-sh/agent"],
-      "matchManagers": ["regex"],
+      "matchPackageNames": [
+        "apptrail-sh/agent"
+      ],
+      "matchManagers": [
+        "custom.regex"
+      ],
       "semanticCommitType": "feat",
       "semanticCommitScope": "agent",
       "prTitle": "feat(agent): update to {{{newVersion}}}",
@@ -30,7 +38,10 @@
         "### Release Notes",
         "[View agent release](https://github.com/apptrail-sh/agent/releases/tag/v{{{newVersion}}})"
       ],
-      "labels": ["release", "agent"],
+      "labels": [
+        "release",
+        "agent"
+      ],
       "automerge": false,
       "postUpgradeTasks": {
         "commands": [
@@ -47,7 +58,9 @@
     {
       "customType": "regex",
       "description": "Track AppTrail Agent version in Chart.yaml",
-      "fileMatch": ["^charts/apptrail-agent/Chart\\.yaml$"],
+      "managerFilePatterns": [
+        "/^charts/apptrail-agent/Chart\\.yaml$/"
+      ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*appVersion:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
       ],
