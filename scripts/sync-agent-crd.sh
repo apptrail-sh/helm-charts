@@ -9,6 +9,7 @@
 #   1. Downloads the CRD from the agent release
 #   2. Calculates the chart version bump based on agent's semver change
 #   3. Updates Chart.yaml with the new chart version
+#   4. Regenerates helm-docs
 #
 
 set -euo pipefail
@@ -17,6 +18,7 @@ CHART_DIR="charts/apptrail-agent"
 CHART_FILE="${CHART_DIR}/Chart.yaml"
 CRD_FILE="${CHART_DIR}/crds/workloadrolloutstate.yaml"
 AGENT_REPO="apptrail-sh/agent"
+HELM_DOCS_VERSION="1.14.2"
 
 # Colors for output
 RED='\033[0;31m'
@@ -177,10 +179,64 @@ main() {
     set_chart_value "version" "$new_chart_version"
     set_chart_value "appVersion" "$new_agent_version"
     
+    # Regenerate helm-docs
+    run_helm_docs
+    
     log_info "✅ Sync complete!"
     log_info "   Chart version: ${new_chart_version}"
     log_info "   App version: ${new_agent_version}"
     log_info "   CRD updated: ${CRD_FILE}"
+}
+
+# Install helm-docs if not available
+install_helm_docs() {
+    local os arch
+    os=$(uname -s | tr '[:upper:]' '[:lower:]')
+    arch=$(uname -m)
+    
+    case "$arch" in
+        x86_64) arch="x86_64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *) log_error "Unsupported architecture: $arch"; return 1 ;;
+    esac
+    
+    local url="https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_${os}_${arch}.tar.gz"
+    
+    log_info "Installing helm-docs v${HELM_DOCS_VERSION}..."
+    
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+    trap "rm -rf $tmp_dir" EXIT
+    
+    if curl -sfL "$url" | tar -xz -C "$tmp_dir"; then
+        # Try to install to /usr/local/bin, fall back to local bin
+        if [[ -w /usr/local/bin ]]; then
+            mv "$tmp_dir/helm-docs" /usr/local/bin/
+        else
+            mkdir -p "$HOME/.local/bin"
+            mv "$tmp_dir/helm-docs" "$HOME/.local/bin/"
+            export PATH="$HOME/.local/bin:$PATH"
+        fi
+        log_info "helm-docs installed successfully"
+    else
+        log_error "Failed to install helm-docs"
+        return 1
+    fi
+}
+
+# Run helm-docs to regenerate documentation
+run_helm_docs() {
+    if ! command -v helm-docs &> /dev/null; then
+        log_warn "helm-docs not found, attempting to install..."
+        install_helm_docs || {
+            log_warn "Could not install helm-docs, skipping documentation generation"
+            return 0
+        }
+    fi
+    
+    log_info "Regenerating helm-docs..."
+    helm-docs --chart-search-root=charts
+    log_info "helm-docs regenerated"
 }
 
 main "$@"

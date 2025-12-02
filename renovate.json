@@ -37,8 +37,7 @@
           "./scripts/sync-agent-crd.sh {{{newVersion}}}"
         ],
         "fileFilters": [
-          "charts/apptrail-agent/**",
-          "scripts/**"
+          "charts/**"
         ],
         "executionMode": "update"
       }
