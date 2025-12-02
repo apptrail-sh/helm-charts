@@ -6,6 +6,9 @@
     ":semanticCommits"
   ],
   "labels": ["dependencies"],
+  "allowedPostUpgradeCommands": [
+    "^\\./scripts/sync-agent-crd\\.sh .*$"
+  ],
   "packageRules": [
     {
       "description": "Group GitHub Actions updates",
@@ -28,7 +31,17 @@
         "[View agent release](https://github.com/apptrail-sh/agent/releases/tag/v{{{newVersion}}})"
       ],
       "labels": ["release", "agent"],
-      "automerge": false
+      "automerge": false,
+      "postUpgradeTasks": {
+        "commands": [
+          "./scripts/sync-agent-crd.sh {{{newVersion}}}"
+        ],
+        "fileFilters": [
+          "charts/apptrail-agent/**",
+          "scripts/**"
+        ],
+        "executionMode": "update"
+      }
     }
   ],
   "customManagers": [
@@ -43,19 +56,5 @@
       "depNameTemplate": "apptrail-sh/agent",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     }
-  ],
-  "postUpgradeTasks": {
-    "commands": [
-      "chmod +x scripts/sync-agent-crd.sh && ./scripts/sync-agent-crd.sh {{{newVersion}}}"
-    ],
-    "fileFilters": [
-      "charts/apptrail-agent/**",
-      "scripts/**"
-    ],
-    "executionMode": "update"
-  },
-  "allowedPostUpgradeCommands": [
-    "^chmod.*$",
-    "^\\./scripts/sync-agent-crd\\.sh.*$"
   ]
 }
