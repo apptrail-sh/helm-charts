@@ -15,19 +15,47 @@
       "automergeType": "pr"
     },
     {
-      "description": "Helm chart dependencies",
-      "matchManagers": ["helmv3"],
-      "groupName": "helm-dependencies",
+      "description": "AppTrail Agent - sync CRD and bump chart version",
+      "matchPackageNames": ["apptrail-sh/agent"],
+      "matchManagers": ["regex"],
+      "semanticCommitType": "feat",
+      "semanticCommitScope": "agent",
+      "prTitle": "feat(agent): update to {{{newVersion}}}",
+      "prBodyNotes": [
+        "This PR updates the AppTrail Agent chart to version `{{{newVersion}}}`.",
+        "",
+        "### Release Notes",
+        "[View agent release](https://github.com/apptrail-sh/agent/releases/tag/v{{{newVersion}}})"
+      ],
+      "labels": ["release", "agent"],
       "automerge": false
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
-      "fileMatch": ["^charts/.*/values\\.yaml$"],
+      "customType": "regex",
+      "description": "Track AppTrail Agent version in Chart.yaml",
+      "fileMatch": ["^charts/apptrail-agent/Chart\\.yaml$"],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>.*?)\\s+depName=(?<depName>.*?)\\n.*?:\\s*(?<currentValue>.*)"
-      ]
+        "#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*appVersion:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "apptrail-sh/agent",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     }
+  ],
+  "postUpgradeTasks": {
+    "commands": [
+      "chmod +x scripts/sync-agent-crd.sh && ./scripts/sync-agent-crd.sh {{{newVersion}}}"
+    ],
+    "fileFilters": [
+      "charts/apptrail-agent/**",
+      "scripts/**"
+    ],
+    "executionMode": "update"
+  },
+  "allowedPostUpgradeCommands": [
+    "^chmod.*$",
+    "^\\./scripts/sync-agent-crd\\.sh.*$"
   ]
 }
-

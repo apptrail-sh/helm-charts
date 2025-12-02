@@ -153,13 +153,6 @@ extraEnv: []
 # -- Extra arguments to pass to the agent
 extraArgs: []
 
-# CRD management
-crds:
-  # -- Install CRDs with the chart
-  install: true
-  # -- Keep CRDs on chart uninstall
-  keep: true
-
 # RBAC configuration
 rbac:
   # -- Create ClusterRole and ClusterRoleBinding
