@@ -8,9 +8,6 @@
   "labels": [
     "dependencies"
   ],
-  "allowedCommands": [
-    "^\\./scripts/sync-agent-crd\\.sh .*$"
-  ],
   "packageRules": [
     {
       "description": "Group GitHub Actions updates",
@@ -22,7 +19,7 @@
       "automergeType": "pr"
     },
     {
-      "description": "AppTrail Agent - sync CRD and bump chart version",
+      "description": "AppTrail Agent - triggers GitHub Action to sync CRD and bump chart version",
       "matchPackageNames": [
         "apptrail-sh/agent"
       ],
@@ -35,6 +32,8 @@
       "prBodyNotes": [
         "This PR updates the AppTrail Agent chart to version `{{{newVersion}}}`.",
         "",
+        "⚙️ A GitHub Action will automatically sync the CRD and bump the chart version.",
+        "",
         "### Release Notes",
         "[View agent release](https://github.com/apptrail-sh/agent/releases/tag/v{{{newVersion}}})"
       ],
@@ -42,16 +41,7 @@
         "release",
         "agent"
       ],
-      "automerge": false,
-      "postUpgradeTasks": {
-        "commands": [
-          "./scripts/sync-agent-crd.sh {{{newVersion}}}"
-        ],
-        "fileFilters": [
-          "charts/apptrail-agent/**"
-        ],
-        "executionMode": "update"
-      }
+      "automerge": false
     }
   ],
   "customManagers": [
