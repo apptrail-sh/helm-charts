@@ -32,8 +32,33 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ secrets.ACTIONS_PAT }}
+          fetch-depth: 0  # Full history needed to compare with main
+
+      - name: Check if already synced
+        id: check
+        run: |
+          # Get current chart version and appVersion from this branch
+          CHART_VERSION=$(grep '^version:' charts/apptrail-agent/Chart.yaml | awk '{print $2}')
+          APP_VERSION=$(grep '^appVersion:' charts/apptrail-agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          
+          # Get base versions from main
+          BASE_CHART_VERSION=$(git show origin/main:charts/apptrail-agent/Chart.yaml | grep '^version:' | awk '{print $2}')
+          BASE_APP_VERSION=$(git show origin/main:charts/apptrail-agent/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          
+          echo "Current: chart=$CHART_VERSION, app=$APP_VERSION"
+          echo "Base:    chart=$BASE_CHART_VERSION, app=$BASE_APP_VERSION"
+          
+          # If chart version already differs from main AND appVersion matches current,
+          # then the sync already happened - skip
+          if [[ "$CHART_VERSION" != "$BASE_CHART_VERSION" && "$APP_VERSION" != "$BASE_APP_VERSION" ]]; then
+            echo "Chart version already bumped (sync already done), skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get agent version
+        if: steps.check.outputs.skip != 'true'
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -48,6 +73,7 @@ jobs:
           echo "Agent version: ${VERSION}"
 
       - name: Detect bump type from labels
+        if: steps.check.outputs.skip != 'true'
         id: bump
         run: |
           BUMP_TYPE=""
@@ -67,6 +93,7 @@ jobs:
           fi
 
       - name: Run sync script
+        if: steps.check.outputs.skip != 'true'
         run: |
           chmod +x scripts/sync-agent-crd.sh
           BUMP_ARG=""
@@ -76,6 +103,7 @@ jobs:
           ./scripts/sync-agent-crd.sh "${{ steps.version.outputs.version }}" $BUMP_ARG
 
       - name: Commit changes
+        if: steps.check.outputs.skip != 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
