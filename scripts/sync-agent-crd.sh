@@ -2,14 +2,18 @@
 #
 # sync-agent-crd.sh - Syncs CRD from agent release and bumps chart version
 #
-# Usage: ./scripts/sync-agent-crd.sh <new-agent-version>
+# Usage: ./scripts/sync-agent-crd.sh <new-agent-version> [--bump major|minor|patch]
 #
 # This script is called by Renovate postUpgradeTasks when the agent version changes.
 # It:
 #   1. Downloads the CRD from the agent release
-#   2. Calculates the chart version bump based on agent's semver change
+#   2. Calculates the chart version bump based on agent's semver change (or uses --bump override)
 #   3. Updates Chart.yaml with the new chart version
 #   4. Regenerates helm-docs
+#
+# Options:
+#   --bump <type>  Override auto-detected bump type (major, minor, patch)
+#                  Can also be controlled via PR labels: bump:major, bump:minor, bump:patch
 #
 
 set -euo pipefail
@@ -91,6 +95,19 @@ get_chart_value() {
     grep "^${key}:" "$CHART_FILE" | sed "s/${key}:[[:space:]]*[\"']*\([^\"']*\)[\"']*/\1/"
 }
 
+# Get value from base branch (main) Chart.yaml
+get_base_chart_value() {
+    local key="$1"
+    local base_branch="${2:-origin/main}"
+    
+    # Try to get value from base branch, fall back to current file if not in git
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        git show "${base_branch}:${CHART_FILE}" 2>/dev/null | grep "^${key}:" | sed "s/${key}:[[:space:]]*[\"']*\([^\"']*\)[\"']*/\1/" || get_chart_value "$key"
+    else
+        get_chart_value "$key"
+    fi
+}
+
 # Update a value in Chart.yaml
 set_chart_value() {
     local key="$1"
@@ -139,10 +156,36 @@ download_crd() {
 }
 
 main() {
-    local new_agent_version="${1:-}"
+    local new_agent_version=""
+    local bump_override=""
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --bump)
+                if [[ -n "${2:-}" && "$2" =~ ^(major|minor|patch)$ ]]; then
+                    bump_override="$2"
+                    shift 2
+                else
+                    log_error "--bump requires one of: major, minor, patch"
+                    exit 1
+                fi
+                ;;
+            -*)
+                log_error "Unknown option: $1"
+                exit 1
+                ;;
+            *)
+                if [[ -z "$new_agent_version" ]]; then
+                    new_agent_version="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
     
     if [[ -z "$new_agent_version" ]]; then
-        log_error "Usage: $0 <new-agent-version>"
+        log_error "Usage: $0 <new-agent-version> [--bump major|minor|patch]"
         exit 1
     fi
     
@@ -151,29 +194,34 @@ main() {
     
     log_info "Syncing agent version ${new_agent_version}"
     
-    # Get current versions
-    local current_chart_version
-    local current_app_version
-    current_chart_version=$(get_chart_value "version")
-    current_app_version=$(get_chart_value "appVersion")
+    # Get versions from base branch (main) for proper comparison
+    local base_chart_version
+    local base_app_version
+    base_chart_version=$(get_base_chart_value "version")
+    base_app_version=$(get_base_chart_value "appVersion")
     
-    log_info "Current chart version: ${current_chart_version}"
-    log_info "Current app version: ${current_app_version}"
+    log_info "Base chart version (main): ${base_chart_version}"
+    log_info "Base app version (main): ${base_app_version}"
     log_info "New agent version: ${new_agent_version}"
     
     # Download the CRD
     download_crd "$new_agent_version"
     
-    # Calculate version bump type based on agent version change
+    # Calculate version bump type (use override if provided, otherwise auto-detect)
     local bump_type
-    bump_type=$(get_bump_type "$current_app_version" "$new_agent_version")
-    log_info "Detected ${bump_type} version bump"
+    if [[ -n "$bump_override" ]]; then
+        bump_type="$bump_override"
+        log_info "Using bump type override: ${bump_type} (from --bump flag or PR label)"
+    else
+        bump_type=$(get_bump_type "$base_app_version" "$new_agent_version")
+        log_info "Auto-detected ${bump_type} version bump (${base_app_version} → ${new_agent_version})"
+    fi
     
-    # Calculate new chart version
+    # Calculate new chart version (bumping from base branch version)
     local new_chart_version
-    new_chart_version=$(bump_version "$current_chart_version" "$bump_type")
+    new_chart_version=$(bump_version "$base_chart_version" "$bump_type")
     
-    log_info "Bumping chart version: ${current_chart_version} → ${new_chart_version} (${bump_type})"
+    log_info "Bumping chart version: ${base_chart_version} → ${new_chart_version} (${bump_type})"
     
     # Update Chart.yaml
     set_chart_value "version" "$new_chart_version"

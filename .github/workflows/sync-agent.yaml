@@ -20,9 +20,11 @@ jobs:
   sync-crd:
     runs-on: ubuntu-latest
     # Only run for Renovate PRs or manual trigger
+    # Skip if PR has 'skip-version-sync' label
     if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && contains(github.head_ref, 'renovate'))
+      !contains(github.event.pull_request.labels.*.name, 'skip-version-sync') &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.head_ref, 'renovate')))
     
     steps:
       - name: Checkout
@@ -45,10 +47,33 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Agent version: ${VERSION}"
 
+      - name: Detect bump type from labels
+        id: bump
+        run: |
+          BUMP_TYPE=""
+          # Check for version bump labels (bump:major, bump:minor, bump:patch)
+          if ${{ contains(github.event.pull_request.labels.*.name, 'bump:major') }}; then
+            BUMP_TYPE="major"
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'bump:minor') }}; then
+            BUMP_TYPE="minor"
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'bump:patch') }}; then
+            BUMP_TYPE="patch"
+          fi
+          echo "type=${BUMP_TYPE}" >> $GITHUB_OUTPUT
+          if [ -n "$BUMP_TYPE" ]; then
+            echo "Bump type override from label: ${BUMP_TYPE}"
+          else
+            echo "No bump label found, will auto-detect from version change"
+          fi
+
       - name: Run sync script
         run: |
           chmod +x scripts/sync-agent-crd.sh
-          ./scripts/sync-agent-crd.sh "${{ steps.version.outputs.version }}"
+          BUMP_ARG=""
+          if [ -n "${{ steps.bump.outputs.type }}" ]; then
+            BUMP_ARG="--bump ${{ steps.bump.outputs.type }}"
+          fi
+          ./scripts/sync-agent-crd.sh "${{ steps.version.outputs.version }}" $BUMP_ARG
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
