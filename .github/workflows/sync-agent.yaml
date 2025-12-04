@@ -28,7 +28,7 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ secrets.ACTIONS_PAT }}
@@ -104,7 +104,7 @@ jobs:
 
       - name: Commit changes
         if: steps.check.outputs.skip != 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         with:
           commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
           file_pattern: 'charts/apptrail-agent/**'
