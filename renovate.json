@@ -31,7 +31,7 @@
       ],
       "semanticCommitType": "feat",
       "semanticCommitScope": "agent",
-      "prTitle": "feat(agent): update to {{{newVersion}}}",
+      "commitMessageTopic": "update to {{{newVersion}}}",
       "prBodyNotes": [
         "This PR updates the AppTrail Agent chart to version `{{{newVersion}}}`.",
         "",
