@@ -108,4 +108,7 @@ jobs:
         with:
           commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
           file_pattern: 'charts/apptrail-agent/**'
+          commit_user_name: 'apptrailbot'
+          commit_user_email: 'apptrailbot@users.noreply.github.com'
+          commit_author: 'apptrailbot <apptrailbot@users.noreply.github.com>'
 
