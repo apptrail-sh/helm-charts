@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'charts/**'
-      - '.github/workflows/lint.yaml'
+      - '.github/workflows/**'
       - 'ct.yaml'
 
 permissions:
