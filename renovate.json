@@ -5,6 +5,9 @@
     "helpers:pinGitHubActionDigests",
     ":semanticCommits"
   ],
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
   "labels": [
     "dependencies"
   ],
