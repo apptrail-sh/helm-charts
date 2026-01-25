@@ -47,12 +47,12 @@ spec:
             {{- if .Values.agent.enableHTTP2 }}
             - --enable-http2=true
             {{- end }}
+            - --cluster-id={{ required "agent.clusterId is required" .Values.agent.clusterId }}
             {{- if .Values.controlplane.enabled }}
             - --controlplane-url={{ .Values.controlplane.url }}
-            - --cluster-id={{ .Values.controlplane.clusterId }}
-            {{- if .Values.controlplane.environment }}
-            - --environment={{ .Values.controlplane.environment }}
             {{- end }}
+            {{- if .Values.pubsub.enabled }}
+            - --pubsub-topic={{ .Values.pubsub.topic }}
             {{- end }}
             {{- if .Values.slack.enabled }}
             {{- if .Values.slack.existingSecret }}
