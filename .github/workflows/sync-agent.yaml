@@ -104,7 +104,7 @@ jobs:
 
       - name: Commit changes
         if: steps.check.outputs.skip != 'true'
-        uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3 # v7
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
         with:
           commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
           file_pattern: 'charts/apptrail-agent/**'
