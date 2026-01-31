@@ -1,6 +1,6 @@
 # agent
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.0](https://img.shields.io/badge/AppVersion-0.4.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.2](https://img.shields.io/badge/AppVersion-0.6.2-informational?style=flat-square)
 
 AppTrail Agent - Kubernetes controller that tracks workload version changes and exports metrics
 
@@ -25,14 +25,13 @@ Kubernetes: `>=1.26.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Affinity rules |
+| agent.clusterId | string | `""` | Unique identifier for this cluster (required, e.g., staging.stg01) |
 | agent.enableHTTP2 | bool | `false` | Enable HTTP/2 (disabled by default for security) |
 | agent.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | agent.leaderElect | bool | `true` | Enable leader election for HA |
 | agent.metricsBindAddress | string | `":8080"` | Metrics bind address |
 | agent.metricsSecure | bool | `false` | Enable secure metrics (HTTPS) |
-| controlplane.clusterId | string | `""` | Cluster ID (required if controlplane.enabled is true) |
 | controlplane.enabled | bool | `false` | Enable Control Plane integration |
-| controlplane.environment | string | `""` | Environment name (optional, can use environment mapping in controlplane) |
 | controlplane.url | string | `""` | Control Plane URL (e.g., http://apptrail-controlplane:3000/api/v1/events) |
 | extraArgs | list | `[]` | Extra arguments to pass to the agent |
 | extraEnv | list | `[]` | Extra environment variables |
@@ -59,6 +58,8 @@ Kubernetes: `>=1.26.0-0`
 | podLabels | object | `{}` | Pod labels |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| pubsub.enabled | bool | `false` | Enable Google Cloud Pub/Sub publisher |
+| pubsub.topic | string | `""` | Pub/Sub topic path (e.g., projects/<project>/topics/<topic>) |
 | rbac.create | bool | `true` | Create ClusterRole and ClusterRoleBinding |
 | readinessProbe.httpGet.path | string | `"/readyz"` |  |
 | readinessProbe.httpGet.port | int | `8081` |  |
