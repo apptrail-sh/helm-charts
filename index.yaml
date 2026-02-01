@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   agent:
   - apiVersion: v2
+    appVersion: 0.8.1
+    created: "2026-02-01T03:28:25.566936703Z"
+    description: AppTrail Agent - Kubernetes controller that tracks workload version
+      changes and exports metrics
+    digest: b84eff57c7f52f1cab10537891496edd9f85216dcf7ecf8eed0adbea9bfa6600
+    home: https://github.com/apptrail-sh/helm-charts
+    keywords:
+    - kubernetes
+    - controller
+    - monitoring
+    - deployments
+    - version-tracking
+    - prometheus
+    kubeVersion: '>=1.26.0-0'
+    maintainers:
+    - name: AppTrail
+      url: https://github.com/apptrail-sh
+    name: agent
+    sources:
+    - https://github.com/apptrail-sh/agent
+    type: application
+    urls:
+    - https://github.com/apptrail-sh/helm-charts/releases/download/agent-0.5.2/agent-0.5.2.tgz
+    version: 0.5.2
+  - apiVersion: v2
     appVersion: 0.8.0
     created: "2026-02-01T02:54:32.784751025Z"
     description: AppTrail Agent - Kubernetes controller that tracks workload version
@@ -180,4 +205,4 @@ entries:
     urls:
     - https://github.com/apptrail-sh/helm-charts/releases/download/controlplane-0.1.0/controlplane-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-01T02:54:32.784777096Z"
+generated: "2026-02-01T03:28:25.566964054Z"
