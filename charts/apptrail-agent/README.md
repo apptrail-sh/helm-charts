@@ -1,6 +1,6 @@
 # agent
 
-![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.8.0](https://img.shields.io/badge/AppVersion-0.8.0-informational?style=flat-square)
+![Version: 0.5.1](https://img.shields.io/badge/Version-0.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.8.0](https://img.shields.io/badge/AppVersion-0.8.0-informational?style=flat-square)
 
 AppTrail Agent - Kubernetes controller that tracks workload version changes and exports metrics
 
@@ -25,7 +25,7 @@ Kubernetes: `>=1.26.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Affinity rules |
-| agent.clusterId | string | `""` | Unique identifier for this cluster (required, e.g., staging.stg01) |
+| agent.clusterId | string | `""` | Unique identifier for this cluster (optional - auto-detected on GKE) |
 | agent.enableHTTP2 | bool | `false` | Enable HTTP/2 (disabled by default for security) |
 | agent.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | agent.leaderElect | bool | `true` | Enable leader election for HA |

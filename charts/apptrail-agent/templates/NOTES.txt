@@ -4,9 +4,10 @@
 
 📡 Control Plane Integration: ENABLED
    URL: {{ .Values.controlplane.url }}
-   Cluster ID: {{ .Values.controlplane.clusterId }}
-   {{- if .Values.controlplane.environment }}
-   Environment: {{ .Values.controlplane.environment }}
+   {{- if .Values.agent.clusterId }}
+   Cluster ID: {{ .Values.agent.clusterId }}
+   {{- else }}
+   Cluster ID: (auto-detected on GKE)
    {{- end }}
 {{- else }}
 
@@ -15,7 +16,7 @@
    To enable, set:
      controlplane.enabled=true
      controlplane.url=http://apptrail-controlplane:3000/api/v1/events
-     controlplane.clusterId=your-cluster-id
+   Optionally set agent.clusterId (auto-detected on GKE if not set)
 {{- end }}
 
 {{- if .Values.slack.enabled }}

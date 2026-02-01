@@ -51,7 +51,7 @@ securityContext:
 
 # Agent configuration
 agent:
-  # -- Unique identifier for this cluster (required, e.g., staging.stg01)
+  # -- Unique identifier for this cluster (optional - auto-detected on GKE)
   clusterId: ""
   # -- Enable leader election for HA
   leaderElect: true

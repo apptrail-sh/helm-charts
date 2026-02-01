@@ -47,7 +47,9 @@ spec:
             {{- if .Values.agent.enableHTTP2 }}
             - --enable-http2=true
             {{- end }}
-            - --cluster-id={{ required "agent.clusterId is required" .Values.agent.clusterId }}
+            {{- if .Values.agent.clusterId }}
+            - --cluster-id={{ .Values.agent.clusterId }}
+            {{- end }}
             {{- if .Values.controlplane.enabled }}
             - --controlplane-url={{ .Values.controlplane.url }}
             {{- end }}
