@@ -25,6 +25,24 @@ rules:
       - statefulsets/status
     verbs:
       - get
+  # Watch pods for rollout status
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  # Watch nodes for cluster information
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
   # Manage WorkloadRolloutState CRDs
   - apiGroups:
       - apptrail.apptrail.sh
