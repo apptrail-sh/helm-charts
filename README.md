@@ -18,7 +18,7 @@ Official Helm charts for [AppTrail](https://github.com/apptrail-sh) - Kubernetes
 ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
 │   Cluster A         │     │   Cluster B         │     │   Cluster C         │
 │   ┌─────────────┐   │     │   ┌─────────────┐   │     │   ┌─────────────┐   │
-│   │apptrail-agent│──────────│apptrail-agent│──────────│apptrail-agent│   │
+│   │    agent    │   │     │   │    agent    │   │     │   │    agent    │
 │   └─────────────┘   │     │   └─────────────┘   │     │   └─────────────┘   │
 └─────────────────────┘     └─────────────────────┘     └─────────────────────┘
            │                         │                         │
