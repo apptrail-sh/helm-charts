@@ -329,6 +329,31 @@ entries:
   controlplane:
   - apiVersion: v2
     appVersion: 0.2.0
+    created: "2026-02-06T18:01:09.572957558Z"
+    description: AppTrail Control Plane - API server for aggregating and querying
+      workload version data
+    digest: 941b4fee32fe5a56ea9e87649faf6043c55519a87d69d527bcf72b207658f6b0
+    home: https://github.com/apptrail-sh/helm-charts
+    keywords:
+    - kubernetes
+    - api
+    - monitoring
+    - deployments
+    - version-tracking
+    - dora-metrics
+    kubeVersion: '>=1.26.0-0'
+    maintainers:
+    - name: AppTrail
+      url: https://github.com/apptrail-sh
+    name: controlplane
+    sources:
+    - https://github.com/apptrail-sh/controlplane
+    type: application
+    urls:
+    - https://github.com/apptrail-sh/helm-charts/releases/download/controlplane-0.2.1/controlplane-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.2.0
     created: "2026-02-06T04:53:55.689520933Z"
     description: AppTrail Control Plane - API server for aggregating and querying
       workload version data
@@ -408,4 +433,4 @@ entries:
     urls:
     - https://github.com/apptrail-sh/helm-charts/releases/download/controlplane-0.1.0/controlplane-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-06T04:53:55.689616809Z"
+generated: "2026-02-06T18:01:09.573014755Z"
