@@ -1,18 +1,15 @@
-{{- if and .Values.environmentMapping.enabled (not .Values.environmentMapping.configMapName) }}
+{{- if and .Values.controlplane.appConfig.enabled (not .Values.controlplane.appConfig.existingConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "controlplane.fullname" . }}-env-mapping
+  name: {{ include "controlplane.fullname" . }}-app-config
   labels:
     {{- include "controlplane.labels" . | nindent 4 }}
 data:
-  environment-mapping.yaml: |
-    {{- if .Values.environmentMapping.inline }}
-    {{- toYaml .Values.environmentMapping.inline | nindent 4 }}
+  {{ .Values.controlplane.appConfig.key | default "application-override.yml" }}: |
+    {{- if .Values.controlplane.appConfig.content }}
+    {{- toYaml .Values.controlplane.appConfig.content | nindent 4 }}
     {{- else }}
-    # Empty environment mapping - configure via values.yaml
-    cluster_mappings: {}
-    namespace_mappings: {}
+    # Empty config - populate via controlplane.appConfig.content in values.yaml
     {{- end }}
 {{- end }}
-

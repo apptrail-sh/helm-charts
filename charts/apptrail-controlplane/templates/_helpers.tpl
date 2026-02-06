@@ -40,6 +40,9 @@ helm.sh/chart: {{ include "controlplane.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.commonLabels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -48,7 +51,6 @@ Selector labels
 {{- define "controlplane.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "controlplane.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/component: api
 {{- end }}
 
 {{/*
@@ -62,43 +64,3 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{/*
-=============================================================================
-Frontend Helpers
-=============================================================================
-*/}}
-
-{{/*
-Frontend fullname
-*/}}
-{{- define "controlplane.frontend.fullname" -}}
-{{- printf "%s-frontend" (include "controlplane.fullname" .) | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Frontend labels
-*/}}
-{{- define "controlplane.frontend.labels" -}}
-helm.sh/chart: {{ include "controlplane.chart" . }}
-{{ include "controlplane.frontend.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Frontend selector labels
-*/}}
-{{- define "controlplane.frontend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "controlplane.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/component: frontend
-{{- end }}
-
-{{/*
-Frontend API URL - auto-configured to point to the controlplane service
-*/}}
-{{- define "controlplane.frontend.apiUrl" -}}
-{{- printf "http://%s:%d" (include "controlplane.fullname" .) (.Values.service.port | int) }}
-{{- end }}

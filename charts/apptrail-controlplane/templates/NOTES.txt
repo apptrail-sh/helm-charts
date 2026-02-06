@@ -1,69 +1,14 @@
-🚀 AppTrail Control Plane has been deployed!
-
-{{- if not .Values.database.url }}
-{{- if not .Values.database.existingSecret }}
-
-⚠️  WARNING: No database configured!
-    The control plane requires a PostgreSQL database.
-    Set database.url or database.existingSecret in your values.
-
-  {{- end }}
-{{- end }}
+AppTrail Control Plane has been deployed!
 
 =============================================================================
-📡 API Server
+API Server
 =============================================================================
-{{- if .Values.ingress.enabled }}
-{{- range $host := .Values.ingress.hosts }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
-{{- end }}
-{{- else if contains "NodePort" .Values.service.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "controlplane.fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.service.type }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-        Watch with: kubectl get svc -w {{ include "controlplane.fullname" . }} -n {{ .Release.Namespace }}
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "controlplane.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.service.port }}
-{{- else }}
-  kubectl port-forward svc/{{ include "controlplane.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
-  Then visit: http://localhost:{{ .Values.service.port }}
-{{- end }}
 
-{{- if .Values.frontend.enabled }}
+  kubectl port-forward svc/{{ include "controlplane.fullname" . }} {{ .Values.controlplane.service.port }}:{{ .Values.controlplane.service.port }} -n {{ .Release.Namespace }}
+  Then visit: http://localhost:{{ .Values.controlplane.service.port }}
 
 =============================================================================
-🌐 Web UI (Frontend)
-=============================================================================
-{{- if .Values.frontend.ingress.enabled }}
-{{- range $host := .Values.frontend.ingress.hosts }}
-  http{{ if $.Values.frontend.ingress.tls }}s{{ end }}://{{ $host.host }}
-{{- end }}
-{{- else if contains "NodePort" .Values.frontend.service.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "controlplane.frontend.fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.frontend.service.type }}
-  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-        Watch with: kubectl get svc -w {{ include "controlplane.frontend.fullname" . }} -n {{ .Release.Namespace }}
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "controlplane.frontend.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.frontend.service.port }}
-{{- else }}
-  kubectl port-forward svc/{{ include "controlplane.frontend.fullname" . }} 8080:{{ .Values.frontend.service.port }} -n {{ .Release.Namespace }}
-  Then visit: http://localhost:8080
-{{- end }}
-
-  The frontend is automatically configured to connect to the API at:
-  {{ include "controlplane.frontend.apiUrl" . }}
-{{- else }}
-
-📝 Frontend is DISABLED. To enable the web UI, set:
-   frontend.enabled=true
-{{- end }}
-
-=============================================================================
-📊 API Endpoints
+API Endpoints
 =============================================================================
    GET  /health                          - Health check
    GET  /api/v1/workloads                - List workloads
@@ -75,11 +20,9 @@
    POST /api/v1/events                   - Event ingestion (from agents)
 
 =============================================================================
-🔗 Agent Configuration
+Agent Configuration
 =============================================================================
    To connect agents to this control plane, set:
      controlplane.enabled=true
-     controlplane.url=http://{{ include "controlplane.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}/api/v1/events
+     controlplane.url=http://{{ include "controlplane.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.controlplane.service.port }}/api/v1/events
      controlplane.clusterId=your-cluster-id
-
-📚 Documentation: https://github.com/apptrail-sh/controlplane

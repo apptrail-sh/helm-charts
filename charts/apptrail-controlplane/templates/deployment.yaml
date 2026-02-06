@@ -5,22 +5,22 @@ metadata:
   labels:
     {{- include "controlplane.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ .Values.controlplane.replicaCount }}
   selector:
     matchLabels:
       {{- include "controlplane.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
+        {{- if .Values.controlplane.appConfig.enabled }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
+        {{- end }}
+        {{- with .Values.controlplane.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         {{- include "controlplane.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.controlplane.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -30,124 +30,72 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "controlplane.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if .Values.migrations.enabled }}
-      initContainers:
-        - name: migrations
-          image: "{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.migrations.image.pullPolicy }}
-          securityContext:
-            {{- toYaml .Values.migrations.securityContext | nindent 12 }}
-          env:
-            {{- if .Values.database.existingSecret }}
-            - name: FLYWAY_URL
-              value: "jdbc:postgresql://{{ .Values.migrations.jdbcHost }}:{{ .Values.migrations.jdbcPort }}/{{ .Values.migrations.jdbcDatabase }}{{ .Values.migrations.jdbcParams }}"
-            - name: FLYWAY_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.database.existingSecret }}
-                  key: {{ .Values.migrations.usernameKey | default "username" }}
-            - name: FLYWAY_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.database.existingSecret }}
-                  key: {{ .Values.migrations.passwordKey | default "password" }}
-            {{- else }}
-            - name: FLYWAY_URL
-              value: "jdbc:postgresql://{{ .Values.migrations.jdbcHost }}:{{ .Values.migrations.jdbcPort }}/{{ .Values.migrations.jdbcDatabase }}{{ .Values.migrations.jdbcParams }}"
-            - name: FLYWAY_USER
-              value: {{ .Values.migrations.username | quote }}
-            - name: FLYWAY_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "controlplane.fullname" . }}-db
-                  key: password
-            {{- end }}
-            {{- with .Values.migrations.extraEnv }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
-          {{- with .Values.migrations.resources }}
-          resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- end }}
+        {{- toYaml .Values.controlplane.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml .Values.controlplane.securityContext | nindent 12 }}
+          image: "{{ .Values.controlplane.image.repository }}:{{ .Values.controlplane.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.controlplane.image.pullPolicy }}
+          {{- with .Values.controlplane.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
-            - name: APPTRAIL_PORT
-              value: {{ .Values.config.port | quote }}
-            - name: APPTRAIL_HTTP_EVENT_HANDLER
-              value: {{ .Values.config.httpEventHandler | quote }}
-            - name: APPTRAIL_TEAM_LABEL_KEY
-              value: {{ .Values.config.teamLabelKey | quote }}
-            - name: APPTRAIL_DATABASE_MAX_OPEN
-              value: {{ .Values.config.databaseMaxOpen | quote }}
-            - name: APPTRAIL_DATABASE_MAX_IDLE
-              value: {{ .Values.config.databaseMaxIdle | quote }}
-            {{- if .Values.database.url }}
-            - name: APPTRAIL_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  {{- if .Values.database.existingSecret }}
-                  name: {{ .Values.database.existingSecret }}
-                  key: {{ .Values.database.existingSecretKey }}
-                  {{- else }}
-                  name: {{ include "controlplane.fullname" . }}-db
-                  key: database-url
-                  {{- end }}
+            {{- if .Values.controlplane.appConfig.enabled }}
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/config/application-override.yml"
             {{- end }}
-            {{- if .Values.environmentMapping.enabled }}
-            - name: APPTRAIL_ENVIRONMENT_MAPPING_FILE
-              value: /config/environment-mapping.yaml
-            {{- end }}
-            {{- with .Values.extraEnv }}
+            {{- with .Values.controlplane.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.config.port }}
+              containerPort: 3000
               protocol: TCP
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            {{- toYaml .Values.controlplane.livenessProbe | nindent 12 }}
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            {{- toYaml .Values.controlplane.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.controlplane.startupProbe | nindent 12 }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.controlplane.resources | nindent 12 }}
           volumeMounts:
-            {{- if .Values.environmentMapping.enabled }}
-            - name: env-mapping
+            - name: tmp
+              mountPath: /tmp
+            {{- if .Values.controlplane.appConfig.enabled }}
+            - name: app-config
               mountPath: /config
               readOnly: true
             {{- end }}
-            {{- with .Values.volumeMounts }}
+            {{- with .Values.controlplane.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
-        {{- if .Values.environmentMapping.enabled }}
-        - name: env-mapping
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.controlplane.appConfig.enabled }}
+        - name: app-config
           configMap:
-            {{- if .Values.environmentMapping.configMapName }}
-            name: {{ .Values.environmentMapping.configMapName }}
+            {{- if .Values.controlplane.appConfig.existingConfigMap }}
+            name: {{ .Values.controlplane.appConfig.existingConfigMap }}
             {{- else }}
-            name: {{ include "controlplane.fullname" . }}-env-mapping
+            name: {{ include "controlplane.fullname" . }}-app-config
             {{- end }}
         {{- end }}
-        {{- with .Values.volumes }}
+        {{- with .Values.controlplane.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.controlplane.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.controlplane.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.controlplane.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

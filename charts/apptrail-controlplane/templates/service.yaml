@@ -5,9 +5,9 @@ metadata:
   labels:
     {{- include "controlplane.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.controlplane.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.controlplane.service.port }}
       targetPort: http
       protocol: TCP
       name: http
