@@ -1,4 +1,4 @@
-{{- if and .Values.controlplane.appConfig.enabled (not .Values.controlplane.appConfig.existingConfigMap) }}
+{{- if and (not (empty .Values.controlplane.appConfig.content)) (not .Values.controlplane.appConfig.existingConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

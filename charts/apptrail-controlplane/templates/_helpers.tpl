@@ -64,3 +64,12 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{/*
+Whether appConfig should be active (content is non-empty or existingConfigMap is set)
+*/}}
+{{- define "controlplane.appConfig.active" -}}
+{{- if or .Values.controlplane.appConfig.existingConfigMap (not (empty .Values.controlplane.appConfig.content)) -}}
+true
+{{- end -}}
+{{- end -}}
+

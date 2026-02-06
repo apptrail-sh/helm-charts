@@ -61,8 +61,6 @@ controlplane:
   # Use this for complex nested configuration that doesn't map well to env vars:
   # cluster definitions, notification channels, quick-links, metrics queries, etc.
   appConfig:
-    # -- Enable mounting an external application config file
-    enabled: false
     # -- Use an existing ConfigMap instead of generating one
     existingConfigMap: ""
     # -- Key in the ConfigMap containing the YAML config

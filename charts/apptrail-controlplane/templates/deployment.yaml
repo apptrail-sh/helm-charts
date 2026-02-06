@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.controlplane.appConfig.enabled }}
+        {{- if include "controlplane.appConfig.active" . }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.controlplane.podAnnotations }}
@@ -42,7 +42,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            {{- if .Values.controlplane.appConfig.enabled }}
+            {{- if include "controlplane.appConfig.active" . }}
             - name: SPRING_CONFIG_ADDITIONAL_LOCATION
               value: "file:/config/application-override.yml"
             {{- end }}
@@ -64,7 +64,7 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-            {{- if .Values.controlplane.appConfig.enabled }}
+            {{- if include "controlplane.appConfig.active" . }}
             - name: app-config
               mountPath: /config
               readOnly: true
@@ -75,7 +75,7 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        {{- if .Values.controlplane.appConfig.enabled }}
+        {{- if include "controlplane.appConfig.active" . }}
         - name: app-config
           configMap:
             {{- if .Values.controlplane.appConfig.existingConfigMap }}
