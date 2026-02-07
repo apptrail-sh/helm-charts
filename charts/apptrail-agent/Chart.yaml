@@ -2,7 +2,7 @@ apiVersion: v2
 name: agent
 description: AppTrail Agent - Kubernetes controller that tracks workload version changes and exports metrics
 type: application
-version: 0.7.0
+version: 0.7.1
 # renovate: datasource=github-releases depName=apptrail-sh/agent
 appVersion: "0.10.1"
 home: https://github.com/apptrail-sh/helm-charts

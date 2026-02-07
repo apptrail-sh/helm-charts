@@ -4,8 +4,8 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-    apptrail.sh/source-version: v0.10.0
-    apptrail.sh/synced-at: "2026-02-05T02:11:33Z"
+    apptrail.sh/source-version: v0.10.1
+    apptrail.sh/synced-at: "2026-02-07T21:14:51Z"
   name: workloadrolloutstates.apptrail.apptrail.sh
 spec:
   group: apptrail.apptrail.sh
