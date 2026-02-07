@@ -19,6 +19,9 @@ nameOverride: ""
 # -- Override the full resource name
 fullnameOverride: ""
 
+# -- Common labels to add to all resources
+commonLabels: {}
+
 serviceAccount:
   # -- Create a service account
   create: true

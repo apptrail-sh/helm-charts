@@ -1,6 +1,6 @@
 # agent
 
-![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.1](https://img.shields.io/badge/AppVersion-0.10.1-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.1](https://img.shields.io/badge/AppVersion-0.10.1-informational?style=flat-square)
 
 AppTrail Agent - Kubernetes controller that tracks workload version changes and exports metrics
 
@@ -31,6 +31,7 @@ Kubernetes: `>=1.26.0-0`
 | agent.leaderElect | bool | `true` | Enable leader election for HA |
 | agent.metricsBindAddress | string | `":8080"` | Metrics bind address |
 | agent.metricsSecure | bool | `false` | Enable secure metrics (HTTPS) |
+| commonLabels | object | `{}` | Common labels to add to all resources |
 | controlplane.enabled | bool | `false` | Enable Control Plane integration |
 | controlplane.url | string | `""` | Control Plane URL (e.g., http://apptrail-controlplane:3000/api/v1/events) |
 | extraArgs | list | `[]` | Extra arguments to pass to the agent |
