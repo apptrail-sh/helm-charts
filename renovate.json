@@ -31,11 +31,11 @@
       ],
       "semanticCommitType": "feat",
       "semanticCommitScope": "agent",
-      "commitMessageTopic": "update to {{{newVersion}}}",
+      "commitMessageTopic": "appVersion",
       "prBodyNotes": [
         "This PR updates the AppTrail Agent chart to version `{{{newVersion}}}`.",
         "",
-        "⚙️ A GitHub Action will automatically sync the CRD and bump the chart version.",
+        "A GitHub Action will automatically sync the CRD and bump the chart version.",
         "",
         "### Release Notes",
         "[View agent release](https://github.com/apptrail-sh/agent/releases/tag/v{{{newVersion}}})"
@@ -45,20 +45,42 @@
         "agent"
       ],
       "automerge": false
+    },
+    {
+      "description": "AppTrail Control Plane - update appVersion in Chart.yaml",
+      "matchPackageNames": [
+        "apptrail-sh/controlplane"
+      ],
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "semanticCommitType": "feat",
+      "semanticCommitScope": "controlplane",
+      "commitMessageTopic": "appVersion",
+      "prBodyNotes": [
+        "This PR updates the AppTrail Control Plane chart to version `{{{newVersion}}}`.",
+        "",
+        "### Release Notes",
+        "[View controlplane release](https://github.com/apptrail-sh/controlplane/releases/tag/v{{{newVersion}}})"
+      ],
+      "labels": [
+        "release",
+        "controlplane"
+      ],
+      "automerge": false
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track AppTrail Agent version in Chart.yaml",
+      "description": "Track AppTrail appVersion in Chart.yaml files",
       "managerFilePatterns": [
-        "/^charts/apptrail-agent/Chart\\.yaml$/"
+        "/^charts/apptrail-agent/Chart\\.yaml$/",
+        "/^charts/apptrail-controlplane/Chart\\.yaml$/"
       ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*appVersion:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
       ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "apptrail-sh/agent",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     }
   ]
