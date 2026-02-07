@@ -1,0 +1,155 @@
+name: Sync Control Plane
+
+on:
+  pull_request:
+    paths:
+      - 'charts/apptrail-controlplane/Chart.yaml'
+
+  workflow_dispatch:
+    inputs:
+      controlplane_version:
+        description: 'Control Plane version to sync (e.g., 0.3.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Only run for Renovate PRs or manual trigger
+    # Skip if PR has 'skip-version-sync' label
+    if: |
+      !contains(github.event.pull_request.labels.*.name, 'skip-version-sync') &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.head_ref, 'renovate')))
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ secrets.ACTIONS_PAT }}
+          fetch-depth: 0
+
+      - name: Check if already synced
+        id: check
+        run: |
+          CHART_VERSION=$(grep '^version:' charts/apptrail-controlplane/Chart.yaml | awk '{print $2}')
+          APP_VERSION=$(grep '^appVersion:' charts/apptrail-controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+
+          BASE_CHART_VERSION=$(git show origin/main:charts/apptrail-controlplane/Chart.yaml | grep '^version:' | awk '{print $2}')
+          BASE_APP_VERSION=$(git show origin/main:charts/apptrail-controlplane/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+
+          echo "Current: chart=$CHART_VERSION, app=$APP_VERSION"
+          echo "Base:    chart=$BASE_CHART_VERSION, app=$BASE_APP_VERSION"
+
+          if [[ "$CHART_VERSION" != "$BASE_CHART_VERSION" && "$APP_VERSION" != "$BASE_APP_VERSION" ]]; then
+            echo "Chart version already bumped (sync already done), skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get controlplane version
+        if: steps.check.outputs.skip != 'true'
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.controlplane_version }}"
+          else
+            VERSION=$(grep '^appVersion:' charts/apptrail-controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Control Plane version: ${VERSION}"
+
+      - name: Detect bump type from labels
+        if: steps.check.outputs.skip != 'true'
+        id: bump
+        run: |
+          BUMP_TYPE=""
+          if ${{ contains(github.event.pull_request.labels.*.name, 'bump:major') }}; then
+            BUMP_TYPE="major"
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'bump:minor') }}; then
+            BUMP_TYPE="minor"
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'bump:patch') }}; then
+            BUMP_TYPE="patch"
+          fi
+          echo "type=${BUMP_TYPE}" >> $GITHUB_OUTPUT
+          if [ -n "$BUMP_TYPE" ]; then
+            echo "Bump type override from label: ${BUMP_TYPE}"
+          else
+            echo "No bump label found, will auto-detect from version change"
+          fi
+
+      - name: Bump chart version and run helm-docs
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+
+          NEW_APP_VERSION="${{ steps.version.outputs.version }}"
+          CHART_FILE="charts/apptrail-controlplane/Chart.yaml"
+
+          # Get base versions from main
+          BASE_CHART_VERSION=$(git show origin/main:${CHART_FILE} | grep '^version:' | awk '{print $2}')
+          BASE_APP_VERSION=$(git show origin/main:${CHART_FILE} | grep '^appVersion:' | sed "s/appVersion:[[:space:]]*[\"']*\([^\"']*\)[\"']*/\1/")
+
+          echo "Base chart version: ${BASE_CHART_VERSION}"
+          echo "Base app version: ${BASE_APP_VERSION}"
+          echo "New app version: ${NEW_APP_VERSION}"
+
+          # Determine bump type
+          BUMP_TYPE="${{ steps.bump.outputs.type }}"
+          if [ -z "$BUMP_TYPE" ]; then
+            # Auto-detect from version comparison
+            IFS='.' read -r OLD_MAJOR OLD_MINOR OLD_PATCH <<< "${BASE_APP_VERSION}"
+            IFS='.' read -r NEW_MAJOR NEW_MINOR NEW_PATCH <<< "${NEW_APP_VERSION}"
+            NEW_PATCH="${NEW_PATCH%%-*}"
+            OLD_PATCH="${OLD_PATCH%%-*}"
+
+            if [[ "$NEW_MAJOR" -gt "$OLD_MAJOR" ]]; then
+              BUMP_TYPE="major"
+            elif [[ "$NEW_MINOR" -gt "$OLD_MINOR" ]]; then
+              BUMP_TYPE="minor"
+            else
+              BUMP_TYPE="patch"
+            fi
+            echo "Auto-detected ${BUMP_TYPE} bump (${BASE_APP_VERSION} -> ${NEW_APP_VERSION})"
+          else
+            echo "Using bump override: ${BUMP_TYPE}"
+          fi
+
+          # Bump chart version
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${BASE_CHART_VERSION}"
+          case "$BUMP_TYPE" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+          NEW_CHART_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+          echo "Bumping chart version: ${BASE_CHART_VERSION} -> ${NEW_CHART_VERSION}"
+
+          # Update Chart.yaml
+          sed -i "s/^version:.*/version: ${NEW_CHART_VERSION}/" "$CHART_FILE"
+          sed -i "s/^appVersion:.*/appVersion: \"${NEW_APP_VERSION}\"/" "$CHART_FILE"
+
+          # Install and run helm-docs
+          HELM_DOCS_VERSION="1.14.2"
+          curl -sSL "https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin helm-docs
+          helm-docs --chart-search-root=charts
+
+          echo "Sync complete: chart=${NEW_CHART_VERSION}, app=${NEW_APP_VERSION}"
+
+      - name: Commit changes
+        if: steps.check.outputs.skip != 'true'
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
+        with:
+          commit_message: "chore(controlplane): bump chart version for ${{ steps.version.outputs.version }}"
+          file_pattern: 'charts/apptrail-controlplane/**'
+          commit_user_name: 'apptrailbot'
+          commit_user_email: 'apptrailbot@users.noreply.github.com'
+          commit_author: 'apptrailbot <apptrailbot@users.noreply.github.com>'
