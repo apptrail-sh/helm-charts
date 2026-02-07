@@ -85,7 +85,7 @@ jobs:
             echo "No bump label found, will auto-detect from version change"
           fi
 
-      - name: Bump chart version and run helm-docs
+      - name: Bump chart version
         if: steps.check.outputs.skip != 'true'
         run: |
           set -euo pipefail
@@ -137,12 +137,13 @@ jobs:
           sed -i "s/^version:.*/version: ${NEW_CHART_VERSION}/" "$CHART_FILE"
           sed -i "s/^appVersion:.*/appVersion: \"${NEW_APP_VERSION}\"/" "$CHART_FILE"
 
-          # Install and run helm-docs
-          HELM_DOCS_VERSION="1.14.2"
-          curl -sSL "https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin helm-docs
-          helm-docs --chart-search-root=charts
-
           echo "Sync complete: chart=${NEW_CHART_VERSION}, app=${NEW_APP_VERSION}"
+
+      - name: Run helm-docs
+        if: steps.check.outputs.skip != 'true'
+        uses: losisin/helm-docs-github-action@6f957579ac122ecc167bf515fe84e828686c9a15 # v1.7.1
+        with:
+          git-push: false
 
       - name: Commit changes
         if: steps.check.outputs.skip != 'true'
