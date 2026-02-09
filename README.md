@@ -62,7 +62,7 @@ The control plane includes the web UI by default. To disable:
 
 ```bash
 helm install apptrail apptrail/apptrail-controlplane \
-  --set frontend.enabled=false \
+  --set ui.enabled=false \
   # ... other values
 ```
 
@@ -97,7 +97,7 @@ See each chart's `values.yaml` for configuration options:
 - [apptrail-agent values](./charts/apptrail-agent/values.yaml)
 - [apptrail-controlplane values](./charts/apptrail-controlplane/values.yaml)
 
-### Control Plane with Frontend Ingress
+### Control Plane with UI Ingress
 
 ```yaml
 # values.yaml
@@ -113,8 +113,8 @@ ingress:
         - path: /
           pathType: Prefix
 
-# Frontend configuration
-frontend:
+# UI configuration
+ui:
   enabled: true
   ingress:
     enabled: true
