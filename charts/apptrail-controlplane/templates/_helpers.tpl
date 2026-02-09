@@ -65,6 +65,37 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+UI fully qualified app name (appended to controlplane fullname).
+*/}}
+{{- define "ui.fullname" -}}
+{{- printf "%s-ui" (include "controlplane.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+UI common labels
+*/}}
+{{- define "ui.labels" -}}
+helm.sh/chart: {{ include "controlplane.chart" . }}
+{{ include "ui.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.commonLabels }}
+{{ toYaml . }}
+{{- end }}
+{{- end }}
+
+{{/*
+UI selector labels
+*/}}
+{{- define "ui.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "controlplane.name" . }}-ui
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: ui
+{{- end }}
+
+{{/*
 Whether appConfig should be active (content is non-empty or existingConfigMap is set)
 */}}
 {{- define "controlplane.appConfig.active" -}}

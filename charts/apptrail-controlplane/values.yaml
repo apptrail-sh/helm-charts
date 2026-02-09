@@ -98,6 +98,22 @@ controlplane:
     type: ClusterIP
     port: 3000
 
+  ingress:
+    # -- Enable controlplane API ingress
+    enabled: false
+    # -- Ingress class name
+    className: ""
+    # -- Ingress annotations
+    annotations: {}
+    # -- Ingress hosts
+    hosts:
+      - host: api.apptrail.local
+        paths:
+          - path: /
+            pathType: Prefix
+    # -- Ingress TLS configuration
+    tls: []
+
   # -- Resource requests and limits
   resources:
     limits:
@@ -155,3 +171,103 @@ controlplane:
   #   - configMapRef:
   #       name: my-app-config
   envFrom: []
+
+# =============================================================================
+# UI Configuration
+# =============================================================================
+ui:
+  # -- Enable the UI deployment
+  enabled: false
+
+  # -- Number of replicas
+  replicaCount: 1
+
+  image:
+    # -- Container image repository
+    repository: ghcr.io/apptrail-sh/frontend
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+    # -- Image tag (users must set this; no appVersion fallback for UI)
+    tag: ""
+
+  # -- API base URL for the UI to connect to the control plane.
+  # Empty string means relative URLs (same-origin). Set to an external URL for cross-origin setups.
+  apiBaseUrl: ""
+
+  # -- Pod annotations
+  podAnnotations: {}
+
+  # -- Pod labels
+  podLabels: {}
+
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 101
+
+  service:
+    # -- Service type
+    type: ClusterIP
+    # -- Service port
+    port: 8080
+
+  ingress:
+    # -- Enable UI ingress
+    enabled: false
+    # -- Ingress class name
+    className: ""
+    # -- Ingress annotations
+    annotations: {}
+    # -- Ingress hosts
+    hosts:
+      - host: apptrail.local
+        paths:
+          - path: /
+            pathType: Prefix
+    # -- Ingress TLS configuration
+    tls: []
+
+  # -- Resource requests and limits
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+  # Health probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 15
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 3
+    periodSeconds: 10
+
+  # -- Node selector
+  nodeSelector: {}
+
+  # -- Tolerations
+  tolerations: []
+
+  # -- Affinity rules
+  affinity: {}
+
+  # -- Extra environment variables
+  extraEnv: []

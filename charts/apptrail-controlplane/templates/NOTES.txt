@@ -3,9 +3,41 @@ AppTrail Control Plane has been deployed!
 =============================================================================
 API Server
 =============================================================================
+{{- if .Values.controlplane.ingress.enabled }}
+{{- range $host := .Values.controlplane.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.controlplane.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
 
   kubectl port-forward svc/{{ include "controlplane.fullname" . }} {{ .Values.controlplane.service.port }}:{{ .Values.controlplane.service.port }} -n {{ .Release.Namespace }}
   Then visit: http://localhost:{{ .Values.controlplane.service.port }}
+{{- end }}
+
+{{- if .Values.ui.enabled }}
+
+=============================================================================
+Web UI
+=============================================================================
+{{- if .Values.ui.ingress.enabled }}
+{{- range $host := .Values.ui.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ui.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+
+  kubectl port-forward svc/{{ include "ui.fullname" . }} {{ .Values.ui.service.port }}:{{ .Values.ui.service.port }} -n {{ .Release.Namespace }}
+  Then visit: http://localhost:{{ .Values.ui.service.port }}
+{{- end }}
+
+{{- if .Values.ui.apiBaseUrl }}
+  API Base URL: {{ .Values.ui.apiBaseUrl }}
+{{- else }}
+  API Base URL: relative (same-origin). Set ui.apiBaseUrl if the API is on a different host.
+{{- end }}
+{{- end }}
 
 =============================================================================
 API Endpoints
