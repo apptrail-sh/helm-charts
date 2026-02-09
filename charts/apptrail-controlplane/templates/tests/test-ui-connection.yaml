@@ -1,9 +1,10 @@
+{{- if .Values.ui.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "agent.fullname" . }}-test-connection"
+  name: "{{ include "ui.fullname" . }}-test-connection"
   labels:
-    {{- include "agent.labels" . | nindent 4 }}
+    {{- include "ui.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
 spec:
@@ -15,7 +16,7 @@ spec:
     - name: wget
       image: busybox:1.37
       command: ['wget']
-      args: ['--spider', '--quiet', '{{ include "agent.fullname" . }}-metrics:{{ .Values.metrics.service.port }}/metrics']
+      args: ['--spider', '--quiet', '{{ include "ui.fullname" . }}:{{ .Values.ui.service.port }}/health']
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
@@ -25,3 +26,4 @@ spec:
           drop:
             - ALL
   restartPolicy: Never
+{{- end }}

@@ -7,9 +7,21 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: wget
-      image: busybox
+      image: busybox:1.37
       command: ['wget']
-      args: ['{{ include "controlplane.fullname" . }}:{{ .Values.controlplane.service.port }}/health']
+      args: ['--spider', '--quiet', '{{ include "controlplane.fullname" . }}:{{ .Values.controlplane.service.port }}/health']
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 65534
+        capabilities:
+          drop:
+            - ALL
   restartPolicy: Never

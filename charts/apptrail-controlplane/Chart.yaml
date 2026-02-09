@@ -2,7 +2,7 @@ apiVersion: v2
 name: controlplane
 description: AppTrail Control Plane - API server for aggregating and querying workload version data
 type: application
-version: 0.3.1
+version: 0.3.2
 # renovate: datasource=github-releases depName=apptrail-sh/controlplane
 appVersion: "0.2.2"
 home: https://github.com/apptrail-sh/helm-charts
