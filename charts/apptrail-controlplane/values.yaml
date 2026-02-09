@@ -184,7 +184,7 @@ ui:
 
   image:
     # -- Container image repository
-    repository: ghcr.io/apptrail-sh/frontend
+    repository: ghcr.io/apptrail-sh/ui
     # -- Image pull policy
     pullPolicy: IfNotPresent
     # -- Image tag (users must set this; no appVersion fallback for UI)
