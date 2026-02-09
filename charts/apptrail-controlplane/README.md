@@ -1,6 +1,6 @@
 # controlplane
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.2](https://img.shields.io/badge/AppVersion-0.2.2-informational?style=flat-square)
+![Version: 0.3.1](https://img.shields.io/badge/Version-0.3.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.2](https://img.shields.io/badge/AppVersion-0.2.2-informational?style=flat-square)
 
 AppTrail Control Plane - API server for aggregating and querying workload version data
 
@@ -81,7 +81,7 @@ Kubernetes: `>=1.26.0-0`
 | ui.enabled | bool | `false` | Enable the UI deployment |
 | ui.extraEnv | list | `[]` | Extra environment variables |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
-| ui.image.repository | string | `"ghcr.io/apptrail-sh/frontend"` | Container image repository |
+| ui.image.repository | string | `"ghcr.io/apptrail-sh/ui"` | Container image repository |
 | ui.image.tag | string | `""` | Image tag (users must set this; no appVersion fallback for UI) |
 | ui.ingress.annotations | object | `{}` | Ingress annotations |
 | ui.ingress.className | string | `""` | Ingress class name |
