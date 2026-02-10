@@ -3,7 +3,7 @@ name: Sync Control Plane
 on:
   pull_request:
     paths:
-      - 'charts/apptrail-controlplane/Chart.yaml'
+      - 'charts/controlplane/Chart.yaml'
 
   workflow_dispatch:
     inputs:
@@ -37,11 +37,11 @@ jobs:
       - name: Check if already synced
         id: check
         run: |
-          CHART_VERSION=$(grep '^version:' charts/apptrail-controlplane/Chart.yaml | awk '{print $2}')
-          APP_VERSION=$(grep '^appVersion:' charts/apptrail-controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          CHART_VERSION=$(grep '^version:' charts/controlplane/Chart.yaml | awk '{print $2}')
+          APP_VERSION=$(grep '^appVersion:' charts/controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
 
-          BASE_CHART_VERSION=$(git show origin/main:charts/apptrail-controlplane/Chart.yaml | grep '^version:' | awk '{print $2}')
-          BASE_APP_VERSION=$(git show origin/main:charts/apptrail-controlplane/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          BASE_CHART_VERSION=$(git show origin/main:charts/controlplane/Chart.yaml | grep '^version:' | awk '{print $2}')
+          BASE_APP_VERSION=$(git show origin/main:charts/controlplane/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
 
           echo "Current: chart=$CHART_VERSION, app=$APP_VERSION"
           echo "Base:    chart=$BASE_CHART_VERSION, app=$BASE_APP_VERSION"
@@ -60,7 +60,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ github.event.inputs.controlplane_version }}"
           else
-            VERSION=$(grep '^appVersion:' charts/apptrail-controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+            VERSION=$(grep '^appVersion:' charts/controlplane/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
           fi
           VERSION="${VERSION#v}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -91,7 +91,7 @@ jobs:
           set -euo pipefail
 
           NEW_APP_VERSION="${{ steps.version.outputs.version }}"
-          CHART_FILE="charts/apptrail-controlplane/Chart.yaml"
+          CHART_FILE="charts/controlplane/Chart.yaml"
 
           # Get base versions from main
           BASE_CHART_VERSION=$(git show origin/main:${CHART_FILE} | grep '^version:' | awk '{print $2}')
@@ -150,7 +150,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
         with:
           commit_message: "chore(controlplane): bump chart version for ${{ steps.version.outputs.version }}"
-          file_pattern: 'charts/apptrail-controlplane/**'
+          file_pattern: 'charts/controlplane/**'
           commit_user_name: 'apptrailbot'
           commit_user_email: 'apptrailbot@users.noreply.github.com'
           commit_author: 'apptrailbot <apptrailbot@users.noreply.github.com>'

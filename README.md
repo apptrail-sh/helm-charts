@@ -9,8 +9,8 @@ Official Helm charts for [AppTrail](https://github.com/apptrail-sh) - Kubernetes
 
 | Chart | Description |
 |-------|-------------|
-| [apptrail-agent](./charts/apptrail-agent) | Kubernetes controller that watches workloads for version changes (deploy per cluster) |
-| [apptrail-controlplane](./charts/apptrail-controlplane) | API server + Web UI for aggregating and viewing workload data (deploy once, centrally) |
+| [agent](./charts/agent) | Kubernetes controller that watches workloads for version changes (deploy per cluster) |
+| [controlplane](./charts/controlplane) | API server + Web UI for aggregating and viewing workload data (deploy once, centrally) |
 
 ## Architecture
 
@@ -52,7 +52,7 @@ helm repo update
 Deploy once in your central/management cluster:
 
 ```bash
-helm install apptrail apptrail/apptrail-controlplane \
+helm install apptrail apptrail/controlplane \
   --namespace apptrail \
   --create-namespace \
   --set database.url=postgres://user:pass@host:5432/apptrail
@@ -61,7 +61,7 @@ helm install apptrail apptrail/apptrail-controlplane \
 The control plane includes the web UI by default. To disable:
 
 ```bash
-helm install apptrail apptrail/apptrail-controlplane \
+helm install apptrail apptrail/controlplane \
   --set ui.enabled=false \
   # ... other values
 ```
@@ -71,7 +71,7 @@ helm install apptrail apptrail/apptrail-controlplane \
 Deploy in each cluster you want to track:
 
 ```bash
-helm install apptrail-agent apptrail/apptrail-agent \
+helm install apptrail-agent apptrail/agent \
   --namespace apptrail-system \
   --create-namespace \
   --set controlplane.enabled=true \
@@ -85,7 +85,7 @@ Charts are also available via GHCR OCI registry:
 
 ```bash
 # Install from OCI registry
-helm install apptrail oci://ghcr.io/apptrail-sh/charts/apptrail-controlplane \
+helm install apptrail oci://ghcr.io/apptrail-sh/charts/controlplane \
   --namespace apptrail \
   --create-namespace
 ```
@@ -94,8 +94,8 @@ helm install apptrail oci://ghcr.io/apptrail-sh/charts/apptrail-controlplane \
 
 See each chart's `values.yaml` for configuration options:
 
-- [apptrail-agent values](./charts/apptrail-agent/values.yaml)
-- [apptrail-controlplane values](./charts/apptrail-controlplane/values.yaml)
+- [agent values](./charts/agent/values.yaml)
+- [controlplane values](./charts/controlplane/values.yaml)
 
 ### Control Plane with UI Ingress
 

@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-CHART_DIR="charts/apptrail-agent"
+CHART_DIR="charts/agent"
 CHART_FILE="${CHART_DIR}/Chart.yaml"
 CRD_FILE="${CHART_DIR}/crds/workloadrolloutstate.yaml"
 AGENT_REPO="apptrail-sh/agent"

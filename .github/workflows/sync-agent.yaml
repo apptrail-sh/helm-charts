@@ -3,7 +3,7 @@ name: Sync Agent CRD
 on:
   pull_request:
     paths:
-      - 'charts/apptrail-agent/Chart.yaml'
+      - 'charts/agent/Chart.yaml'
   
   workflow_dispatch:
     inputs:
@@ -38,12 +38,12 @@ jobs:
         id: check
         run: |
           # Get current chart version and appVersion from this branch
-          CHART_VERSION=$(grep '^version:' charts/apptrail-agent/Chart.yaml | awk '{print $2}')
-          APP_VERSION=$(grep '^appVersion:' charts/apptrail-agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          CHART_VERSION=$(grep '^version:' charts/agent/Chart.yaml | awk '{print $2}')
+          APP_VERSION=$(grep '^appVersion:' charts/agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
           
           # Get base versions from main
-          BASE_CHART_VERSION=$(git show origin/main:charts/apptrail-agent/Chart.yaml | grep '^version:' | awk '{print $2}')
-          BASE_APP_VERSION=$(git show origin/main:charts/apptrail-agent/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+          BASE_CHART_VERSION=$(git show origin/main:charts/agent/Chart.yaml | grep '^version:' | awk '{print $2}')
+          BASE_APP_VERSION=$(git show origin/main:charts/agent/Chart.yaml | grep '^appVersion:' | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
           
           echo "Current: chart=$CHART_VERSION, app=$APP_VERSION"
           echo "Base:    chart=$BASE_CHART_VERSION, app=$BASE_APP_VERSION"
@@ -65,7 +65,7 @@ jobs:
             VERSION="${{ github.event.inputs.agent_version }}"
           else
             # Extract version from Chart.yaml (Renovate already updated it)
-            VERSION=$(grep '^appVersion:' charts/apptrail-agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
+            VERSION=$(grep '^appVersion:' charts/agent/Chart.yaml | sed 's/appVersion:[[:space:]]*[\"'\'']*\([^\"'\'']*\)[\"'\'']*/\1/')
           fi
           # Remove 'v' prefix if present
           VERSION="${VERSION#v}"
@@ -107,7 +107,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
         with:
           commit_message: "chore(agent): sync CRD and bump chart version for ${{ steps.version.outputs.version }}"
-          file_pattern: 'charts/apptrail-agent/**'
+          file_pattern: 'charts/agent/**'
           commit_user_name: 'apptrailbot'
           commit_user_email: 'apptrailbot@users.noreply.github.com'
           commit_author: 'apptrailbot <apptrailbot@users.noreply.github.com>'

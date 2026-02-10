@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Helm charts for [AppTrail](https://github.com/apptrail-sh) — Kubernetes workload version tracking and DORA metrics. Two charts:
 
-- **apptrail-agent** (`charts/apptrail-agent/`) — Per-cluster K8s controller that watches workloads for version changes. Includes CRDs, ClusterRole RBAC, ServiceMonitor for Prometheus.
-- **apptrail-controlplane** (`charts/apptrail-controlplane/`) — Central API server (Spring Boot on port 3000) + Web UI. Uses a ConfigMap-based appConfig pattern for Spring Boot external YAML overrides.
+- **agent** (`charts/agent/`) — Per-cluster K8s controller that watches workloads for version changes. Includes CRDs, ClusterRole RBAC, ServiceMonitor for Prometheus.
+- **controlplane** (`charts/controlplane/`) — Central API server (Spring Boot on port 3000) + Web UI. Uses a ConfigMap-based appConfig pattern for Spring Boot external YAML overrides.
 
 ## Commands
 
@@ -16,16 +16,16 @@ Helm charts for [AppTrail](https://github.com/apptrail-sh) — Kubernetes worklo
 ct lint --config ct.yaml
 
 # Validate individual chart
-helm lint charts/apptrail-agent
-helm lint charts/apptrail-controlplane
+helm lint charts/agent
+helm lint charts/controlplane
 
 # Render templates locally (inspect output without installing)
-helm template test charts/apptrail-agent
-helm template test charts/apptrail-controlplane
+helm template test charts/agent
+helm template test charts/controlplane
 
 # Validate rendered manifests against K8s schemas
-helm template test charts/apptrail-agent | kubeconform -strict -ignore-missing-schemas
-helm template test charts/apptrail-controlplane | kubeconform -strict -ignore-missing-schemas
+helm template test charts/agent | kubeconform -strict -ignore-missing-schemas
+helm template test charts/controlplane | kubeconform -strict -ignore-missing-schemas
 
 # Generate/update chart README from values.yaml comments
 helm-docs
@@ -63,7 +63,7 @@ The controlplane uses `controlplane.appConfig.content` (inline YAML) or `control
 
 ## Agent CRD Sync Automation
 
-Renovate tracks `appVersion` in `charts/apptrail-agent/Chart.yaml` via a custom regex manager. When it opens a PR:
+Renovate tracks `appVersion` in `charts/agent/Chart.yaml` via a custom regex manager. When it opens a PR:
 1. `sync-agent.yaml` workflow detects the Renovate branch
 2. Runs `scripts/sync-agent-crd.sh` which downloads the CRD from the agent release, auto-detects semver bump type, updates `Chart.yaml` version, and regenerates helm-docs
 3. Bump type can be overridden with PR labels: `bump:major`, `bump:minor`, `bump:patch`

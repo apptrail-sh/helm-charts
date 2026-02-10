@@ -62,5 +62,5 @@ jobs:
           # Run chart-testing install
           # Note: Some charts may need additional config to install successfully
           # For now, we skip charts that require external dependencies
-          ct install --config ct.yaml --excluded-charts apptrail-controlplane || true
+          ct install --config ct.yaml --excluded-charts controlplane || true
 

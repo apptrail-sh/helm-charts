@@ -75,8 +75,8 @@
       "customType": "regex",
       "description": "Track AppTrail appVersion in Chart.yaml files",
       "managerFilePatterns": [
-        "/^charts/apptrail-agent/Chart\\.yaml$/",
-        "/^charts/apptrail-controlplane/Chart\\.yaml$/"
+        "/^charts/agent/Chart\\.yaml$/",
+        "/^charts/controlplane/Chart\\.yaml$/"
       ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*appVersion:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
