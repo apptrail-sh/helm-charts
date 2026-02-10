@@ -4,7 +4,7 @@ description: AppTrail Control Plane - API server for aggregating and querying wo
 type: application
 version: 0.4.2
 # renovate: datasource=github-releases depName=apptrail-sh/controlplane
-appVersion: "0.3.2"
+appVersion: "0.3.3"
 home: https://github.com/apptrail-sh/helm-charts
 sources:
   - https://github.com/apptrail-sh/controlplane
