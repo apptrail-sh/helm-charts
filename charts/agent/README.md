@@ -1,6 +1,6 @@
 # agent
 
-![Version: 0.8.1](https://img.shields.io/badge/Version-0.8.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.1](https://img.shields.io/badge/AppVersion-0.10.1-informational?style=flat-square)
+![Version: 0.8.2](https://img.shields.io/badge/Version-0.8.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.1](https://img.shields.io/badge/AppVersion-0.10.1-informational?style=flat-square)
 
 AppTrail Agent - Kubernetes controller that tracks workload version changes and exports metrics
 
@@ -32,7 +32,11 @@ Kubernetes: `>=1.26.0-0`
 | agent.metricsBindAddress | string | `":8080"` | Metrics bind address |
 | agent.metricsSecure | bool | `false` | Enable secure metrics (HTTPS) |
 | commonLabels | object | `{}` | Common labels to add to all resources |
+| controlplane.apiKey | string | `""` | API key for authenticating with Control Plane |
 | controlplane.enabled | bool | `false` | Enable Control Plane integration |
+| controlplane.existingSecret | object | `{"key":"api-key","name":""}` | Existing secret containing the API key |
+| controlplane.existingSecret.key | string | `"api-key"` | Key in the secret containing the API key |
+| controlplane.existingSecret.name | string | `""` | Name of the existing secret |
 | controlplane.url | string | `""` | Control Plane URL (e.g., http://apptrail-controlplane:3000/api/v1/events) |
 | extraArgs | list | `[]` | Extra arguments to pass to the agent |
 | extraEnv | list | `[]` | Extra environment variables |

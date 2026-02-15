@@ -73,6 +73,14 @@ controlplane:
   enabled: false
   # -- Control Plane URL (e.g., http://apptrail-controlplane:3000/api/v1/events)
   url: ""
+  # -- API key for authenticating with Control Plane
+  apiKey: ""
+  # -- Existing secret containing the API key
+  existingSecret:
+    # -- Name of the existing secret
+    name: ""
+    # -- Key in the secret containing the API key
+    key: "api-key"
 
 # Slack integration
 slack:
