@@ -1,6 +1,6 @@
 # controlplane
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.0](https://img.shields.io/badge/AppVersion-0.5.0-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.0](https://img.shields.io/badge/AppVersion-0.5.0-informational?style=flat-square)
 
 AppTrail Control Plane - API server for aggregating and querying workload version data
 
@@ -32,6 +32,11 @@ Kubernetes: `>=1.26.0-0`
 | controlplane.appConfig.key | string | `"application-override.yml"` | Key in the ConfigMap containing the YAML config |
 | controlplane.envFrom | list | `[]` | Environment variable sources (secretRef/configMapRef for envFrom) Example: envFrom:   - secretRef:       name: my-app-secrets   - configMapRef:       name: my-app-config |
 | controlplane.extraEnv | list | `[]` | Extra environment variables |
+| controlplane.httpRoute.annotations | object | `{}` | HTTPRoute annotations |
+| controlplane.httpRoute.enabled | bool | `false` | Enable controlplane API HTTPRoute (Gateway API) |
+| controlplane.httpRoute.hostnames | list | `["api.apptrail.local"]` | Hostnames to match |
+| controlplane.httpRoute.parentRefs | list | `[]` | Parent gateway references |
+| controlplane.httpRoute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules (backendRefs auto-set to controlplane service if omitted) |
 | controlplane.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | controlplane.image.repository | string | `"ghcr.io/apptrail-sh/controlplane"` | Container image repository |
 | controlplane.image.tag | string | `""` | Overrides the image tag (default: chart appVersion) |
@@ -80,6 +85,11 @@ Kubernetes: `>=1.26.0-0`
 | ui.apiBaseUrl | string | `""` | API base URL for the UI to connect to the control plane. Empty string means relative URLs (same-origin). Set to an external URL for cross-origin setups. |
 | ui.enabled | bool | `false` | Enable the UI deployment |
 | ui.extraEnv | list | `[]` | Extra environment variables |
+| ui.httpRoute.annotations | object | `{}` | HTTPRoute annotations |
+| ui.httpRoute.enabled | bool | `false` | Enable UI HTTPRoute (Gateway API) |
+| ui.httpRoute.hostnames | list | `["apptrail.local"]` | Hostnames to match |
+| ui.httpRoute.parentRefs | list | `[]` | Parent gateway references |
+| ui.httpRoute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules (backendRefs auto-set to UI service if omitted) |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | ui.image.repository | string | `"ghcr.io/apptrail-sh/ui"` | Container image repository |
 | ui.image.tag | string | `""` | Image tag (users must set this; no appVersion fallback for UI) |
