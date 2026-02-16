@@ -7,9 +7,9 @@ Official Helm charts for [AppTrail](https://github.com/apptrail-sh) - Kubernetes
 
 ## Charts
 
-| Chart | Description |
-|-------|-------------|
-| [agent](./charts/agent) | Kubernetes controller that watches workloads for version changes (deploy per cluster) |
+| Chart                                 | Description                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| [agent](./charts/agent)               | Kubernetes controller that watches workloads for version changes (deploy per cluster)  |
 | [controlplane](./charts/controlplane) | API server + Web UI for aggregating and viewing workload data (deploy once, centrally) |
 
 ## Architecture

@@ -114,6 +114,29 @@ controlplane:
     # -- Ingress TLS configuration
     tls: []
 
+  httpRoute:
+    # -- Enable controlplane API HTTPRoute (Gateway API)
+    enabled: false
+    # -- HTTPRoute annotations
+    annotations: {}
+    # -- Parent gateway references
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-ns
+    #   sectionName: https
+    # -- Hostnames to match
+    hostnames:
+      - api.apptrail.local
+    # -- HTTPRoute rules (backendRefs auto-set to controlplane service if omitted)
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        # timeouts:
+        #   request: "10s"
+        #   backendRequest: "5s"
+
   # -- Resource requests and limits
   resources:
     limits:
@@ -235,6 +258,29 @@ ui:
             pathType: Prefix
     # -- Ingress TLS configuration
     tls: []
+
+  httpRoute:
+    # -- Enable UI HTTPRoute (Gateway API)
+    enabled: false
+    # -- HTTPRoute annotations
+    annotations: {}
+    # -- Parent gateway references
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-ns
+    #   sectionName: https
+    # -- Hostnames to match
+    hostnames:
+      - apptrail.local
+    # -- HTTPRoute rules (backendRefs auto-set to UI service if omitted)
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        # timeouts:
+        #   request: "10s"
+        #   backendRequest: "5s"
 
   # -- Resource requests and limits
   resources:
