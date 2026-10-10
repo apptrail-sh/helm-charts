@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ secrets.ACTIONS_PAT }}
@@ -141,13 +141,13 @@ jobs:
 
       - name: Run helm-docs
         if: steps.check.outputs.skip != 'true'
-        uses: losisin/helm-docs-github-action@6f957579ac122ecc167bf515fe84e828686c9a15 # v1.7.1
+        uses: losisin/helm-docs-github-action@2ccf3e77eb70dc80d62f8cc26f15d0a96b75fef4 # v1.8.0
         with:
           git-push: false
 
       - name: Commit changes
         if: steps.check.outputs.skip != 'true'
-        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
+        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7
         with:
           commit_message: "chore(controlplane): bump chart version for ${{ steps.version.outputs.version }}"
           file_pattern: 'charts/controlplane/**'
